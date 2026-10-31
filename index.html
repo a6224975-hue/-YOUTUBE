@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PX0HE5CVHS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-PX0HE5CVHS');
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>粹 手作烘焙 | 純粹自然，手作溫暖</title>
+    <meta name="description" content="「粹」手作烘焙：手工布丁、手工餅乾、雪Q餅、牛軋糖與精選禮盒，天然食材、無添加、手工製作。">
+
+    <!-- PWA：Manifest 與主題色 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4E3D2B">
+    <meta name="application-name" content="粹烘焙">
+
+    <!-- PWA：圖示 -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+    <link rel="shortcut icon" href="icons/favicon.ico">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+    <!-- PWA：iOS Safari 加入主畫面設定 (頂部導覽列為深色，狀態列與其融為一體) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="粹烘焙">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Noto Serif TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* RWD / PWA 基礎樣式 */
+        html { scroll-padding-top: 5.5rem; -webkit-text-size-adjust: 100%; }
+        body { -webkit-tap-highlight-color: transparent; }
+        button, a { touch-action: manipulation; }
+        /* 雙層外框：深色與淺色背景上都看得見 */
+        :focus-visible { outline: 2px solid #8C6239; box-shadow: 0 0 0 4px #FEF1DE; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+        }
+    </style>
+    <script>
+        // 圖片載入失敗 (檔案不存在或離線尚未快取) 時，改用內嵌 SVG 品牌佔位圖
+        function imgFallback(img) {
+            img.onerror = null;
+            const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">' +
+                '<rect width="400" height="300" fill="#FEF1DE"/>' +
+                '<circle cx="200" cy="150" r="70" fill="#4E3D2B"/>' +
+                '<text x="200" y="174" font-size="68" text-anchor="middle" fill="#FEF1DE" font-family="serif">粹</text></svg>';
+            img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Noto Serif TC', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#4E3D2B',    // 主視覺深褐色
+                            light: '#FEF1DE',   // 主視覺奶油米白
+                            accent: '#8C6239',  // 溫暖木棕色
+                            hover: '#3D2F21',   // 深深褐色
+                            bg: '#FAF6F0',      // 質感背景米白色
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-bg text-gray-800 font-sans antialiased selection:bg-brand-light selection:text-brand-dark">
+
+    <!-- 通知提示框 (Notification Toast) -->
+    <div id="toast" role="status" aria-live="polite" style="margin-bottom: env(safe-area-inset-bottom, 0px)" class="pointer-events-none fixed left-4 right-4 bottom-4 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm z-[60] transform translate-y-24 opacity-0 transition-all duration-300 bg-brand-dark text-brand-light px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-brand-light/20">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-lg shrink-0"></i>
+        <span id="toast-message" class="text-sm font-medium">已成功加入購物車！</span>
+    </div>
+
+    <!-- 新版本更新提示 (Service Worker 偵測到更新時顯示) -->
+    <div id="update-bar" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-5 sm:bottom-5 sm:max-w-sm z-[70] bg-brand-hover text-brand-light border border-brand-light/20 rounded-xl shadow-2xl p-4 items-center justify-between gap-3" style="margin-bottom: env(safe-area-inset-bottom, 0px)">
+        <span class="text-sm">有新版本可以使用</span>
+        <button id="update-btn" class="bg-brand-light text-brand-dark text-sm font-bold px-4 py-2 rounded-lg shrink-0">立即更新</button>
+    </div>
+
+    <!-- 頂部導航欄 (Navigation Bar) -->
+    <header class="sticky top-0 z-40 bg-brand-dark text-brand-light shadow-md transition-all" style="padding-top: env(safe-area-inset-top, 0px)">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 md:h-20 flex items-center justify-between">
+            <!-- 品牌標誌 (圖一 Logo) -->
+            <a href="#" class="flex items-center space-x-3 group">
+                <img src="images/logo-mark.png" alt="粹 手作烘焙 Logo" width="48" height="48" onerror="imgFallback(this)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-brand-light object-cover group-hover:scale-105 transition-transform shadow-md">
+                <div>
+                    <span class="font-serif font-bold text-lg sm:text-xl text-brand-light block leading-tight tracking-wider">粹 手作烘焙</span>
+                    <span class="text-[10px] text-brand-light/70 tracking-widest hidden min-[400px]:block font-light">PURE HANDMADE BAKERY</span>
+                </div>
+            </a>
+
+            <!-- 導航連結 (桌面版) -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-brand-light/90">
+                <a href="#about" class="hover:text-white transition-colors">品牌精神</a>
+                <a href="#menu" class="hover:text-white transition-colors">招牌點心</a>
+                <a href="#giftboxes" class="hover:text-white transition-colors">精選禮盒</a>
+                <a href="#reviews" class="hover:text-white transition-colors">好評推薦</a>
+                <a href="#contact" class="hover:text-white transition-colors">訂購諮詢</a>
+            </nav>
+
+            <!-- 右側功能區 -->
+            <div class="flex items-center space-x-4">
+                <!-- 安裝 App 按鈕 (瀏覽器支援安裝時才顯示) -->
+                <button type="button" onclick="handleInstall()" class="install-trigger hidden inline-flex items-center gap-2 text-sm font-bold px-3.5 h-11 rounded-full bg-brand-light text-brand-dark hover:bg-white transition-colors" aria-label="安裝 App">
+                    <i class="fa-solid fa-download"></i>
+                    <span class="hidden sm:inline">安裝 App</span>
+                </button>
+
+                <!-- 購物車按鈕 -->
+                <button onclick="toggleCart()" class="relative w-11 h-11 flex items-center justify-center rounded-full bg-brand-hover text-brand-light hover:bg-brand-light hover:text-brand-dark transition-colors" aria-label="購物車">
+                    <i class="fa-solid fa-basket-shopping text-lg"></i>
+                    <span id="cart-badge" class="absolute -top-1 -right-1 bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                </button>
+
+                <!-- 手機版選單按鈕 -->
+                <button onclick="toggleMobileMenu()" class="md:hidden w-11 h-11 flex items-center justify-center rounded-lg text-brand-light hover:bg-brand-hover" aria-label="選單">
+                    <i id="mobile-menu-icon" class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 手機版導航選單 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-brand-hover border-t border-brand-light/10 px-4 pt-2 pb-6 space-y-3 shadow-lg text-brand-light">
+            <a href="#about" onclick="toggleMobileMenu()" class="block py-3 hover:text-white font-medium">品牌精神</a>
+            <a href="#menu" onclick="toggleMobileMenu()" class="block py-3 hover:text-white font-medium">招牌點心</a>
+            <a href="#giftboxes" onclick="toggleMobileMenu()" class="block py-3 hover:text-white font-medium">精選禮盒</a>
+            <a href="#reviews" onclick="toggleMobileMenu()" class="block py-3 hover:text-white font-medium">好評推薦</a>
+            <a href="#contact" onclick="toggleMobileMenu()" class="block py-3 hover:text-white font-medium">訂購諮詢</a>
+        </div>
+    </header>
+
+    <!-- 頁首主視覺 (Hero Section) -->
+    <section class="relative bg-brand-dark text-brand-light py-10 sm:py-16 lg:py-24 overflow-hidden border-b border-brand-light/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6 text-center lg:text-left">
+                <span class="inline-block bg-brand-light/10 text-brand-light border border-brand-light/30 text-xs font-semibold px-4 py-1.5 rounded-full tracking-wider">
+                    天然食材 · 無添加 · 手工製作
+                </span>
+                <h1 class="font-serif text-3xl min-[400px]:text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+                    粹煉最自然單純的<br><span class="text-amber-300">手作幸福滋味</span>
+                </h1>
+                <p class="text-brand-light/80 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
+                    「粹」象徵著純粹與用心。從滑順綿密的手工布丁、酥脆香甜的手工餅乾，到多層次口感的手工雪Q餅與柔軟不黏牙的手工牛軋糖，為您呈現最溫暖的幸福時刻。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-4">
+                    <a href="#menu" class="bg-brand-light text-brand-dark hover:bg-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition-all text-center">
+                        瀏覽美味點心
+                    </a>
+                    <a href="#giftboxes" class="border border-brand-light text-brand-light hover:bg-brand-light/10 font-medium px-8 py-3.5 rounded-xl transition-all text-center">
+                        訂購溫馨禮盒
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 主視覺右側：品牌影片 (點擊後才載入播放器) -->
+            <div class="relative flex justify-center">
+                <div class="w-full max-w-md lg:max-w-none rounded-3xl overflow-hidden shadow-2xl border-4 border-brand-light/20 bg-brand-hover p-3 flex flex-col items-center text-center">
+                    <div id="video-player" class="relative w-full aspect-video rounded-2xl overflow-hidden shadow-xl mb-4 border-2 border-brand-light/30 bg-black">
+                        <button type="button" onclick="playVideo()" class="group absolute inset-0 w-full h-full" aria-label="播放品牌影片">
+                            <img src="https://i.ytimg.com/vi/EMj0sITfWA8/hqdefault.jpg" alt="粹 手作烘焙品牌影片封面" width="480" height="360" onerror="imgFallback(this)" class="w-full h-full object-cover">
+                            <span class="absolute inset-0 bg-black/30 group-hover:bg-black/15 transition-colors"></span>
+                            <span class="absolute inset-0 flex items-center justify-center">
+                                <span class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand-light text-brand-dark flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-play text-xl sm:text-2xl ml-1"></i>
+                                </span>
+                            </span>
+                        </button>
+                    </div>
+                    <h2 class="font-serif text-2xl font-bold text-brand-light">粹 · 手作烘焙</h2>
+                    <p class="text-sm font-medium text-brand-light/80 mt-1">天然食材 | 清順細緻 | 香濃綿密 | 嚴選堅果</p>
+                    <a href="https://youtu.be/EMj0sITfWA8" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 min-h-[44px] mt-1 text-xs text-brand-light/70 hover:text-white underline underline-offset-4">
+                        <i class="fa-brands fa-youtube"></i><span>在 YouTube 觀看</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 品牌特色 (Features) -->
+    <section id="about" class="py-12 sm:py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
+                <span class="text-brand-accent font-semibold text-xs tracking-widest uppercase">BRAND PHILOSOPHY</span>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-dark mt-1 mb-4">「粹」的堅持與承諾</h2>
+                <p class="text-gray-600 text-sm sm:text-base">嚴選天然高品質食材，為您與家人把關每一口甜蜜。</p>
+            </div>
+
+            <figure class="max-w-4xl mx-auto mb-10 sm:mb-14">
+                <img src="images/hero-brunch.jpg" alt="粹 手作烘焙的手工布丁、手工餅乾與手工牛軋糖" width="1000" height="968" loading="lazy" onerror="imgFallback(this)" class="w-full aspect-[4/3] sm:aspect-[3/2] object-cover object-[center_75%] rounded-3xl border-2 border-brand-light shadow-md">
+            </figure>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 特色 1 -->
+                <div class="bg-brand-bg p-6 sm:p-8 rounded-2xl border border-brand-light/80 text-center hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-brand-dark text-brand-light rounded-2xl flex items-center justify-center text-2xl mx-auto mb-6 shadow-md">
+                        <i class="fa-solid fa-wheat-awn"></i>
+                    </div>
+                    <h3 class="font-serif font-bold text-xl text-brand-dark mb-3">天然食材 零添加</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">堅持使用天然高品質食材，絕不添加人工防腐劑與色素，保留最純粹的食材原味。</p>
+                </div>
+                <!-- 特色 2 -->
+                <div class="bg-brand-bg p-6 sm:p-8 rounded-2xl border border-brand-light/80 text-center hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-brand-dark text-brand-light rounded-2xl flex items-center justify-center text-2xl mx-auto mb-6 shadow-md">
+                        <i class="fa-solid fa-hand-holding-heart"></i>
+                    </div>
+                    <h3 class="font-serif font-bold text-xl text-brand-dark mb-3">用心手工製作</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">每一道工序皆由手作職人傾心注入熱情，從布丁焦糖熬煮到牛軋糖揉切，手作感十足。</p>
+                </div>
+                <!-- 特色 3 -->
+                <div class="bg-brand-bg p-6 sm:p-8 rounded-2xl border border-brand-light/80 text-center hover:shadow-md transition-shadow">
+                    <div class="w-16 h-16 bg-brand-dark text-brand-light rounded-2xl flex items-center justify-center text-2xl mx-auto mb-6 shadow-md">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <h3 class="font-serif font-bold text-xl text-brand-dark mb-3">禮盒傳遞溫暖</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">多款精心規劃的溫馨禮盒，不論是節慶送禮、辦公室下午茶或分享親友，都能傳遞最真摯的心意。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 招牌單品點心 (Single Items Section - 圖二至圖五) -->
+    <section id="menu" class="py-12 sm:py-16 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-brand-accent font-semibold text-xs tracking-widest uppercase">HANDMADE DELICACIES</span>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-dark mt-1 mb-4">招牌手作點心</h2>
+                <p class="text-gray-600 text-sm sm:text-base">無添加人工色素與防腐劑，口口都是純粹幸福的味道。</p>
+            </div>
+
+            <!-- 單品網格 -->
+            <div id="product-grid" class="grid grid-cols-1 min-[520px]:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
+                <!-- 由 JavaScript 動態生成 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 精選禮盒區塊 (Gift Boxes Section - 圖六至圖八) -->
+    <section id="giftboxes" class="py-12 sm:py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
+                <span class="text-brand-accent font-semibold text-xs tracking-widest uppercase font-serif">GIFT BOX SELECTION</span>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-dark mt-1 mb-4">「粹」精選禮盒系列</h2>
+                <p class="text-gray-600 text-sm sm:text-base">集合餅乾、雪Q餅與牛軋糖的三重豐盛美味，心意滿滿的送禮首選。</p>
+            </div>
+
+            <!-- 禮盒情境展示 -->
+            <figure class="max-w-4xl mx-auto mb-10 sm:mb-14">
+                <img src="images/gift-showcase.jpg" alt="粹 手作烘焙的牛皮紙禮盒、提袋與手作甜點" width="1200" height="1097" loading="lazy" onerror="imgFallback(this)" class="w-full aspect-[4/3] sm:aspect-[16/10] object-cover rounded-3xl border-2 border-brand-light shadow-md">
+            </figure>
+
+            <!-- 3 款禮盒卡片網格 -->
+            <div id="giftbox-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 由 JavaScript 動態生成 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 顧客評價 (Reviews Section) -->
+    <section id="reviews" class="py-12 sm:py-16 bg-brand-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-dark mb-4">顧客讚不絕口的好味道</h2>
+                <p class="text-gray-600 text-sm sm:text-base">聽聽喜愛「粹」手作烘焙的朋友們怎麼說。</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 評論 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-amber-500 text-sm mb-4 space-x-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">
+                            「手工布丁口感超級清順細緻，香濃綿密的焦糖香完全不甜膩！大人小孩都搶著吃！」
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-brand-dark text-brand-light flex items-center justify-center font-bold">陳</div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">陳小姐</p>
+                            <p class="text-xs text-gray-500">忠實回購顧客</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 評論 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-amber-500 text-sm mb-4 space-x-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">
+                            「過年訂了豪華心意禮盒送給親友，大家讚不絕口！雪Q餅酸甜有層次，牛軋糖香濃而且完全不黏牙！」
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-brand-dark text-brand-light flex items-center justify-center font-bold">林</div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">林先生</p>
+                            <p class="text-xs text-gray-500">節慶禮盒預訂</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 評論 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-brand-light shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-amber-500 text-sm mb-4 space-x-1">
+                            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">
+                            「手工餅乾酥脆美味，真的能吃到嚴選優質食材的用心，搭配熱茶作為辦公室下午茶超級幸福。」
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3 pt-4 border-t border-gray-100">
+                        <div class="w-10 h-10 rounded-full bg-brand-dark text-brand-light flex items-center justify-center font-bold">黃</div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">黃太太</p>
+                            <p class="text-xs text-gray-500">辦公室團購聚會</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 聯絡與門市資訊 (Contact Section) -->
+    <section id="contact" class="py-12 sm:py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="space-y-6">
+                    <span class="text-brand-accent font-semibold text-xs tracking-widest uppercase">CONTACT US</span>
+                    <h2 class="font-serif text-3xl sm:text-4xl font-bold text-brand-dark">歡迎預訂與線上諮詢</h2>
+                    <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                        「粹」手作烘焙產品均為每日手工新鮮製作，無添加防腐劑。數量有限，歡迎提前透過線上表單或電話預訂。
+                    </p>
+                    <div class="space-y-4 pt-2">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-brand-dark text-brand-light rounded-xl flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-brand-dark">工作室取貨地址</p>
+                                <p class="text-sm text-gray-600">台北市手作烘焙巷 12 號 (採預約取貨)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-brand-dark text-brand-light rounded-xl flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-brand-dark">營業與服務時間</p>
+                                <p class="text-sm text-gray-600">週一至週六 11:00 - 19:00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <div class="w-10 h-10 bg-brand-dark text-brand-light rounded-xl flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-brand-dark">訂購與諮詢專線</p>
+                                <a href="tel:+886287654321" class="text-sm text-brand-accent underline underline-offset-2">(02) 8765-4321</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 訂閱/預約表單 -->
+                <div class="bg-brand-bg p-5 sm:p-8 rounded-3xl border border-brand-light">
+                    <h3 class="font-serif text-xl font-bold text-brand-dark mb-4">線上快速預訂單</h3>
+                    <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-dark uppercase mb-1">您的姓名</label>
+                            <input type="text" name="name" autocomplete="name" required class="w-full px-4 py-3 rounded-xl bg-white border border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-dark text-base sm:text-sm" placeholder="請輸入姓名">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-dark uppercase mb-1">聯絡電話</label>
+                            <input type="tel" name="tel" autocomplete="tel" inputmode="tel" required class="w-full px-4 py-3 rounded-xl bg-white border border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-dark text-base sm:text-sm" placeholder="請輸入電話號碼">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-brand-dark uppercase mb-1">預訂品項 / 禮盒數量 / 需求諮詢</label>
+                            <textarea rows="4" name="message" required class="w-full px-4 py-3 rounded-xl bg-white border border-brand-light focus:outline-none focus:ring-2 focus:ring-brand-dark text-base sm:text-sm" placeholder="範例：手工布丁 6顆、豪華心意禮盒 2盒，預計取貨時間..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-brand-dark hover:bg-brand-hover text-brand-light font-medium py-3.5 rounded-xl transition-all shadow-md">
+                            送出預訂單
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁尾 (Footer) -->
+    <footer class="bg-brand-dark text-brand-light/70 pt-12 border-t border-brand-light/10" style="padding-bottom: calc(3rem + env(safe-area-inset-bottom, 0px))">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div class="space-y-4 md:col-span-2">
+                    <div class="flex items-center space-x-3">
+                        <img src="images/logo-mark.png" alt="粹 手作烘焙 Logo" width="40" height="40" loading="lazy" onerror="imgFallback(this)" class="w-10 h-10 rounded-full border border-brand-light object-cover">
+                        <span class="font-serif font-bold text-lg text-brand-light">粹 · 手作烘焙</span>
+                    </div>
+                    <p class="text-sm text-brand-light/70 max-w-sm leading-relaxed">
+                        天然食材，無添加，手工製作。以純粹手作的溫度，為您與親友帶來最溫暖甘甜的幸福時光。
+                    </p>
+                    <button type="button" onclick="handleInstall()" class="install-trigger hidden inline-flex items-center gap-2 text-sm font-bold px-4 h-11 rounded-full bg-brand-light text-brand-dark hover:bg-white transition-colors">
+                        <i class="fa-solid fa-download"></i>
+                        <span>安裝「粹」App 到主畫面</span>
+                    </button>
+                </div>
+                <div>
+                    <h4 class="text-brand-light font-bold text-sm mb-4 font-serif">快速連結</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#about" class="hover:text-white transition-colors">品牌精神</a></li>
+                        <li><a href="#menu" class="hover:text-white transition-colors">招牌點心</a></li>
+                        <li><a href="#giftboxes" class="hover:text-white transition-colors">精選禮盒</a></li>
+                        <li><a href="#reviews" class="hover:text-white transition-colors">好評推薦</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-brand-light font-bold text-sm mb-4 font-serif">社群追蹤</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-11 h-11 rounded-full bg-brand-hover flex items-center justify-center text-brand-light hover:bg-brand-light hover:text-brand-dark transition-colors" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" class="w-11 h-11 rounded-full bg-brand-hover flex items-center justify-center text-brand-light hover:bg-brand-light hover:text-brand-dark transition-colors" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-11 h-11 rounded-full bg-brand-hover flex items-center justify-center text-brand-light hover:bg-brand-light hover:text-brand-dark transition-colors" aria-label="LINE"><i class="fa-brands fa-line"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-brand-light/10 pt-8 text-center text-xs text-brand-light/50">
+                &copy; 2026 粹 手作烘焙 Pure Handmade Bakery. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- 購物車 Modal -->
+    <div id="cart-modal" role="dialog" aria-modal="true" aria-label="購物車" onclick="if(event.target===this)toggleCart()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden transition-opacity">
+        <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col">
+            <!-- 購物車標題 -->
+            <div class="px-6 pb-6 bg-brand-dark text-brand-light flex items-center justify-between" style="padding-top: calc(1.5rem + env(safe-area-inset-top, 0px))">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-basket-shopping text-lg"></i>
+                    <h3 class="font-serif font-bold text-lg">您的購物車</h3>
+                </div>
+                <button onclick="toggleCart()" class="w-11 h-11 flex items-center justify-center text-brand-light/70 hover:text-white rounded-lg" aria-label="關閉購物車">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 購物車商品列表 -->
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6 space-y-4">
+                <!-- 動態生成 -->
+            </div>
+
+            <!-- 購物車結帳區 -->
+            <div class="p-6 border-t border-gray-100 bg-brand-bg space-y-4" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px))">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">總計金額</span>
+                    <span id="cart-total" class="font-serif font-bold text-2xl text-brand-dark">NT$ 0</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-brand-dark hover:bg-brand-hover text-brand-light font-medium py-3.5 rounded-xl transition-all shadow-md">
+                    確認送出預訂
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- iOS 安裝教學 (iOS Safari 不支援安裝提示，需手動加入主畫面) -->
+    <div id="install-modal" role="dialog" aria-modal="true" aria-labelledby="install-title" onclick="if(event.target===this)closeInstallModal()" class="hidden fixed inset-0 z-[70] items-end sm:items-center justify-center bg-black/60 p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl" style="margin-bottom: env(safe-area-inset-bottom, 0px)">
+            <h3 id="install-title" class="font-serif font-bold text-lg text-brand-dark mb-4">安裝「粹」到主畫面</h3>
+            <ol class="space-y-3 text-sm text-gray-700 list-decimal list-inside">
+                <li>點選 Safari 的「分享」按鈕 <i class="fa-solid fa-arrow-up-from-bracket text-brand-accent"></i></li>
+                <li>往下找到並選擇「加入主畫面」</li>
+                <li>點右上角「新增」，即可像 App 一樣開啟</li>
+            </ol>
+            <button type="button" onclick="closeInstallModal()" class="mt-6 w-full bg-brand-dark hover:bg-brand-hover text-brand-light font-medium py-3 rounded-xl transition-colors">知道了</button>
+        </div>
+    </div>
+
+    <!-- JavaScript 互動邏輯 -->
+    <script>
+        // 「粹」手作烘焙 - 四大招牌單品產品資料 (圖二~圖五)
+        const products = [
+            { 
+                id: 1, 
+                name: '手工布丁', 
+                subtitle: 'Handmade Pudding',
+                tag: '清順細緻 · 香濃綿密', 
+                price: 60, 
+                desc: '天然食材、無添加、手工製作。清順細緻，香濃綿密的滋味令人回味無窮。', 
+                badge: '經典招牌',
+                image: 'images/product-pudding.jpg'
+            },
+            { 
+                id: 2, 
+                name: '手工餅乾', 
+                subtitle: 'Handmade Cookies',
+                tag: '酥脆與香甜的完美平衡', 
+                price: 150, 
+                desc: '精選食材，每一口都是幸福的味道。酥脆可口，奶香濃郁不甜膩。', 
+                badge: '人氣首選',
+                image: 'images/product-cookies.jpg'
+            },
+            { 
+                id: 3, 
+                name: '手工雪Q餅', 
+                subtitle: 'Handmade SnowQ Cake',
+                tag: '嚴選堅果 · 香濃奶香', 
+                price: 200, 
+                desc: '多層次的口感享受，酸甜蔓越莓搭配香濃奶香與堅果，嚼勁十足。', 
+                badge: '團購熱銷',
+                image: 'images/product-snowq.jpg'
+            },
+            { 
+                id: 4, 
+                name: '手工牛軋糖', 
+                subtitle: 'Handmade Nougat',
+                tag: '香濃奶香 · 口感柔軟', 
+                price: 300, 
+                desc: '甜而不膩的經典滋味，滿滿優質堅果，柔軟不黏牙，老少咸宜。', 
+                badge: '經典美味',
+                image: 'images/product-nougat.jpg'
+            }
+        ];
+
+        // 「粹」手作烘焙 - 三大精選禮盒資料 (圖六~圖八)
+        const giftBoxes = [
+            {
+                id: 101,
+                name: '溫馨小禮盒',
+                price: 490,
+                desc: '巧小精緻，內容包含三款經典人氣手作點心，送禮輕巧溫馨。',
+                image: 'images/giftbox-small.jpg',
+                items: [
+                    { name: '手工餅乾', spec: '150g' },
+                    { name: '手工雪Q餅', spec: '100g' },
+                    { name: '手工牛軋糖', spec: '100g' }
+                ],
+                tag: '輕巧溫馨首選'
+            },
+            {
+                id: 102,
+                name: '經典綜合禮盒',
+                price: 690,
+                desc: '經典黃金比例組合，份量剛好，親友聚會與節慶餽贈的熱門優選。',
+                image: 'images/giftbox-classic.jpg',
+                items: [
+                    { name: '手工餅乾', spec: '150g' },
+                    { name: '手工雪Q餅', spec: '150g' },
+                    { name: '手工牛軋糖', spec: '200g' }
+                ],
+                tag: '人氣熱銷禮盒'
+            },
+            {
+                id: 103,
+                name: '豪華心意禮盒',
+                price: 890,
+                desc: '超大澎湃份量，集結最豐富的手作甜蜜，表達最深厚充沛的誠摯心意。',
+                image: 'images/giftbox-deluxe.jpg',
+                items: [
+                    { name: '手工餅乾', spec: '300g' },
+                    { name: '手工雪Q餅', spec: '200g' },
+                    { name: '手工牛軋糖', spec: '200g' }
+                ],
+                tag: '尊榮豪華禮獻'
+            }
+        ];
+
+        // 購物車存入 localStorage，重新開啟 App 後仍保留 (只存 id / type / 數量，價格以最新資料為準)
+        const CART_KEY = 'cui-cart-v2';
+
+        function loadCart() {
+            try {
+                const raw = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+                if (!Array.isArray(raw)) return [];
+                return raw
+                    .map(i => {
+                        const list = i.type === 'giftbox' ? giftBoxes : products;
+                        const data = list.find(x => x.id === i.id);
+                        const q = Math.max(1, parseInt(i.quantity, 10) || 1);
+                        return data ? { ...data, quantity: q, type: i.type === 'giftbox' ? 'giftbox' : 'product' } : null;
+                    })
+                    .filter(Boolean);
+            } catch (_) { return []; }
+        }
+
+        function saveCart() {
+            try {
+                localStorage.setItem(CART_KEY, JSON.stringify(cart.map(({ id, type, quantity }) => ({ id, type, quantity }))));
+            } catch (_) { /* 隱私模式或空間不足時忽略 */ }
+        }
+
+        let cart = loadCart();
+
+        // 渲染單品點心
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = '';
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl overflow-hidden border border-brand-light shadow-sm hover:shadow-md transition-all flex flex-col justify-between group';
+                card.innerHTML = `
+                    <div>
+                        <!-- 產品真實圖片區 -->
+                        <div class="relative aspect-square bg-brand-light overflow-hidden border-b border-brand-light/50">
+                            <img src="${product.image}" alt="${product.name}" width="400" height="256" loading="lazy" onerror="imgFallback(this)" class="w-full h-full object-cover object-[center_58%] group-hover:scale-105 transition-transform duration-300">
+                            <span class="absolute top-3 left-3 bg-brand-dark/90 text-brand-light text-[11px] font-medium px-2.5 py-1 rounded-full shadow-md">
+                                ${product.badge}
+                            </span>
+                        </div>
+                        <!-- 卡片內容 -->
+                        <div class="p-5">
+                            <div class="flex justify-between items-baseline mb-1">
+                                <h4 class="font-serif font-bold text-xl text-brand-dark">${product.name}</h4>
+                                <span class="text-xs text-brand-accent italic">${product.subtitle}</span>
+                            </div>
+                            <span class="inline-block mb-3 text-[11px] bg-brand-bg text-brand-dark font-medium px-2.5 py-0.5 rounded-full border border-brand-light/80">
+                                ${product.tag}
+                            </span>
+                            <p class="text-gray-600 text-xs sm:text-sm leading-relaxed mb-4">${product.desc}</p>
+                        </div>
+                    </div>
+                    <!-- 卡片底部與購買按鈕 -->
+                    <div class="px-5 pb-5 pt-0 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-gray-400 block">單品售價</span>
+                            <span class="font-serif font-bold text-lg text-brand-dark">NT$ ${product.price}</span>
+                        </div>
+                        <button onclick="addToCart(${product.id}, 'product')" class="bg-brand-dark hover:bg-brand-hover text-brand-light px-4 py-3 rounded-xl transition-colors text-sm font-medium flex items-center space-x-1.5 shadow-sm">
+                            <i class="fa-solid fa-cart-plus text-xs"></i>
+                            <span>預訂點心</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 渲染禮盒區塊
+        function renderGiftBoxes() {
+            const grid = document.getElementById('giftbox-grid');
+            grid.innerHTML = '';
+
+            giftBoxes.forEach(box => {
+                const card = document.createElement('div');
+                card.className = 'bg-brand-bg rounded-3xl overflow-hidden border-2 border-brand-light shadow-sm hover:shadow-lg transition-all flex flex-col justify-between';
+                
+                const itemsList = box.items.map(item => `
+                    <div class="flex items-center justify-between py-1.5 border-b border-brand-light/60 text-sm">
+                        <span class="text-brand-dark font-medium flex items-center">
+                            <i class="fa-solid fa-gift text-brand-accent text-xs mr-2"></i>${item.name}
+                        </span>
+                        <span class="font-bold text-brand-dark bg-white/80 px-2.5 py-0.5 rounded-md text-xs border border-brand-light/80">${item.spec}</span>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div>
+                        <!-- 禮盒真實圖片區 -->
+                        <div class="relative aspect-[2/1] bg-brand-light overflow-hidden border-b border-brand-light">
+                            <img src="${box.image}" alt="${box.name}" width="400" height="256" loading="lazy" onerror="imgFallback(this)" class="w-full h-full object-cover object-top">
+                            <span class="absolute top-3 left-3 bg-brand-dark text-brand-light text-xs font-medium px-3 py-1 rounded-full shadow-md">
+                                ${box.tag}
+                            </span>
+                        </div>
+
+                        <div class="p-6">
+                            <h3 class="font-serif font-bold text-2xl text-brand-dark mb-2">${box.name}</h3>
+                            <p class="text-gray-600 text-xs leading-relaxed mb-6">${box.desc}</p>
+                            
+                            <!-- 禮盒內容物明細 -->
+                            <div class="bg-white/90 p-4 rounded-2xl border border-brand-light/80 space-y-1">
+                                <p class="text-xs font-bold text-brand-accent uppercase tracking-wider mb-2">禮盒內容物組合</p>
+                                ${itemsList}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 禮盒價格與下單 -->
+                    <div class="p-6 pt-0 bg-brand-bg border-t border-brand-light/40 flex items-center justify-between mt-auto">
+                        <div>
+                            <span class="text-xs text-gray-500 block">禮盒價</span>
+                            <span class="font-serif font-bold text-2xl text-brand-dark">NT$ ${box.price}</span>
+                        </div>
+                        <button onclick="addToCart(${box.id}, 'giftbox')" class="bg-brand-dark hover:bg-brand-hover text-brand-light px-5 py-3 rounded-xl transition-all text-sm font-bold flex items-center space-x-2 shadow-md">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            <span>預訂禮盒</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 加入購物車
+        function addToCart(id, type = 'product') {
+            let itemData;
+            if (type === 'product') {
+                itemData = products.find(p => p.id === id);
+            } else {
+                itemData = giftBoxes.find(g => g.id === id);
+            }
+
+            const existing = cart.find(item => item.id === id);
+
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ ...itemData, quantity: 1, type });
+            }
+
+            updateCartUI();
+            showToast(`已將「${itemData.name}」加入預訂清單`);
+        }
+
+        // 更新購物車 UI
+        function updateCartUI() {
+            const badge = document.getElementById('cart-badge');
+            const itemsContainer = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            if (totalCount > 0) {
+                badge.innerText = totalCount;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = `
+                    <div class="text-center py-16 text-gray-400">
+                        <i class="fa-solid fa-basket-shopping text-4xl mb-3 text-brand-light"></i>
+                        <p class="text-sm">購物車目前是空的</p>
+                    </div>
+                `;
+            } else {
+                itemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex items-center justify-between bg-brand-bg p-4 rounded-xl border border-brand-light">
+                        <div class="flex-1 pr-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2 py-0.5 rounded ${item.type === 'giftbox' ? 'bg-amber-700 text-white' : 'bg-brand-dark text-brand-light'} font-medium">
+                                    ${item.type === 'giftbox' ? '禮盒' : '單品'}
+                                </span>
+                                <h4 class="font-serif font-bold text-sm text-brand-dark">${item.name}</h4>
+                            </div>
+                            <p class="text-xs text-brand-accent font-semibold mt-1">NT$ ${item.price} × ${item.quantity}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="updateQuantity(${item.id}, -1)" class="w-9 h-9 bg-white border border-brand-light rounded-lg flex items-center justify-center text-brand-dark hover:bg-brand-light font-bold">-</button>
+                            <span class="text-sm font-bold w-5 text-center">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, 1)" class="w-9 h-9 bg-white border border-brand-light rounded-lg flex items-center justify-center text-brand-dark hover:bg-brand-light font-bold">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            totalEl.innerText = `NT$ ${totalPrice}`;
+            saveCart();
+        }
+
+        // 調整數量
+        function updateQuantity(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== id);
+                }
+                updateCartUI();
+            }
+        }
+
+        // 切換購物車開關
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            // 開啟購物車時鎖定背景捲動
+            document.body.classList.toggle('overflow-hidden', !modal.classList.contains('hidden'));
+        }
+
+        // 切換手機版導航
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            const icon = document.getElementById('mobile-menu-icon');
+            menu.classList.toggle('hidden');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-xmark');
+        }
+
+        // 顯示通知
+        let toastTimer;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            messageEl.innerText = message;
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // 聯絡表單送出模擬
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            showToast('預訂單已成功送出！我們將盡快電話與您確認。');
+            event.target.reset();
+        }
+
+        // 結帳模擬
+        function checkout() {
+            if (cart.length === 0) {
+                showToast('購物車是空的，請先選擇點心或禮盒！');
+                return;
+            }
+            showToast('預訂單已成功送出！感謝您對「粹」手作烘焙的支持。');
+            cart = [];
+            updateCartUI();
+            toggleCart();
+        }
+
+        // ===================== 主視覺品牌影片 (YouTube) =====================
+        const VIDEO_ID = 'EMj0sITfWA8';
+        function playVideo() {
+            if (!navigator.onLine) {
+                showToast('目前離線，無法播放影片，請連線後再試');
+                return;
+            }
+            // 使用 youtube-nocookie 網域；點擊後才建立 iframe
+            document.getElementById('video-player').innerHTML =
+                '<iframe class="absolute inset-0 w-full h-full" ' +
+                'src="https://www.youtube-nocookie.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0&playsinline=1" ' +
+                'title="粹 手作烘焙 品牌影片" ' +
+                'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+                'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+        }
+
+        // ===================== PWA：安裝 App =====================
+        let deferredPrompt = null;
+        const isStandalone = () =>
+            window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isIOS = () =>
+            /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        function setInstallButtons(visible) {
+            document.querySelectorAll('.install-trigger').forEach(btn => btn.classList.toggle('hidden', !visible));
+        }
+
+        // Chrome / Edge / Android：攔截安裝提示，改由自訂按鈕觸發
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!isStandalone()) setInstallButtons(true);
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            setInstallButtons(false);
+            showToast('已安裝！可從主畫面開啟「粹」');
+        });
+
+        async function handleInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                setInstallButtons(false);
+            } else if (isIOS()) {
+                openInstallModal();
+            }
+        }
+
+        function openInstallModal() {
+            const m = document.getElementById('install-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeInstallModal() {
+            const m = document.getElementById('install-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ===================== PWA：Service Worker 與更新 =====================
+        function showUpdateBar(worker) {
+            const bar = document.getElementById('update-bar');
+            bar.classList.remove('hidden');
+            bar.classList.add('flex');
+            document.getElementById('update-btn').onclick = () => worker.postMessage({ type: 'SKIP_WAITING' });
+        }
+
+        if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+            window.addEventListener('load', async () => {
+                try {
+                    const reg = await navigator.serviceWorker.register('./sw.js');
+                    if (reg.waiting && navigator.serviceWorker.controller) showUpdateBar(reg.waiting);
+                    reg.addEventListener('updatefound', () => {
+                        const nw = reg.installing;
+                        if (!nw) return;
+                        nw.addEventListener('statechange', () => {
+                            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBar(nw);
+                        });
+                    });
+                } catch (err) {
+                    console.warn('Service Worker 註冊失敗：', err);
+                }
+            });
+
+            // 新版 SW 接手後重新載入一次
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                location.reload();
+            });
+        }
+
+        // ===================== 連線狀態 =====================
+        window.addEventListener('offline', () => showToast('目前離線，仍可瀏覽已載入的內容'));
+        window.addEventListener('online', () => showToast('已重新連線'));
+
+        // 鍵盤：Esc 關閉浮層
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (!document.getElementById('cart-modal').classList.contains('hidden')) toggleCart();
+            closeInstallModal();
+        });
+
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+            renderGiftBoxes();
+            updateCartUI();
+            // iOS 沒有 beforeinstallprompt，直接顯示教學入口
+            if (isIOS() && !isStandalone()) setInstallButtons(true);
+        });
+    </script>
+</body>
+</html>
